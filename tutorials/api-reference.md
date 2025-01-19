@@ -1,0 +1,107 @@
+To create an API client for the `longhorn/longhorn-manager` repository, you need to understand the endpoints, methods, and request data. Below is a prompt that contains the necessary information extracted from the `api/router.go` file:
+
+API Endpoints and Methods:
+- `GET /`: Returns API versions.
+- `GET /metrics`: Returns metrics.
+- `GET /v1`: Returns API version information.
+- `GET /v1/apiversions`: Returns API versions.
+- `GET /v1/apiversions/v1`: Returns API version information.
+- `GET /v1/schemas`: Returns all schemas.
+- `GET /v1/schemas/{id}`: Returns a specific schema by ID.
+- `GET /v1/settings`: List all settings.
+- `GET /v1/settings/{name}`: Get a specific setting by name.
+- `PUT /v1/settings/{name}`: Update a specific setting by name.
+- `GET /v1/volumes`: List all volumes.
+- `GET /v1/volumes/{name}`: Get a specific volume by name.
+- `DELETE /v1/volumes/{name}`: Delete a specific volume by name.
+- `POST /v1/volumes`: Create a new volume.
+- `POST /v1/volumes/{volume-name}?action={action}`: Perform an action on a specific volume.
+  - Query parameters for actions on volumes: `attach`, `detach`, `salvage`, `updateDataLocality`, `updateAccessMode`, `updateUnmapMarkSnapChainRemoved`, `updateSnapshotMaxCount`, `updateSnapshotMaxSize`, `updateReplicaSoftAntiAffinity`, `updateReplicaZoneSoftAntiAffinity`, `updateReplicaDiskSoftAntiAffinity`, `activate`, `expand`, `cancelExpansion`, `updateReplicaCount`, `updateReplicaAutoBalance`, `updateSnapshotDataIntegrity`, `updateBackupCompressionMethod`, `updateFreezeFilesystemForSnapshot`, `updateBackupTargetName`, `replicaRemove`, `engineUpgrade`, `trimFilesystem`, `snapshotPurge`, `snapshotCreate`, `snapshotList`, `snapshotGet`, `snapshotDelete`, `snapshotRevert`, `snapshotBackup`, `snapshotCRCreate`, `snapshotCRList`, `snapshotCRGet`, `snapshotCRDelete`, `pvCreate`, `pvcCreate`, `recurringJobAdd`, `recurringJobList`, `recurringJobDelete`.
+- `POST /v1/backuptargets`: Create a new backup target.
+- `GET /v1/backuptargets/{backupTargetName}`: Get a specific backup target by name.
+- `GET /v1/backuptargets`: List all backup targets.
+- `PUT /v1/backuptargets`: Sync all backup targets.
+- `DELETE /v1/backuptargets/{backupTargetName}`: Delete a specific backup target by name.
+  - Query parameters for actions on backup targets: `backupTargetSync`, `backupTargetUpdate`.
+- `GET /v1/backupvolumes`: List all backup volumes.
+- `PUT /v1/backupvolumes`: Sync all backup volumes.
+- `GET /v1/backupvolumes/{backupVolumeName}`: Get a specific backup volume by name.
+- `DELETE /v1/backupvolumes/{backupVolumeName}`: Delete a specific backup volume by name.
+  - Query parameters for actions on backup volumes: `backupList`, `backupGet`, `backupDelete`, `backupVolumeSync`.
+- `GET /v1/nodes`: List all nodes.
+- `GET /v1/nodes/{name}`: Get a specific node by name.
+- `PUT /v1/nodes/{name}`: Update a specific node by name.
+- `DELETE /v1/nodes/{name}`: Delete a specific node by name.
+  - Query parameter for action on nodes: `diskUpdate`.
+- `GET /v1/engineimages`: List all engine images.
+- `GET /v1/engineimages/{name}`: Get a specific engine image by name.
+- `DELETE /v1/engineimages/{name}`: Delete a specific engine image by name.
+- `POST /v1/engineimages`: Create a new engine image.
+- `GET /v1/events`: List all events.
+- `GET /v1/disktags`: List all disk tags.
+- `GET /v1/nodetags`: List all node tags.
+- `GET /v1/instancemanagers`: List all instance managers.
+- `GET /v1/instancemanagers/{name}`: Get a specific instance manager by name.
+- `GET /v1/backingimages`: List all backing images.
+- `GET /v1/backingimages/{name}`: Get a specific backing image by name.
+- `GET /v1/backingimages/{name}/download`: Download a specific backing image by name.
+- `POST /v1/backingimages`: Create a new backing image.
+- `DELETE /v1/backingimages/{name}`: Delete a specific backing image by name.
+  - Query parameters for actions on backing images: `backingImageCleanup`, `BackingImageUpload`, `backupBackingImageCreate`, `updateMinNumberOfCopies`.
+- `GET /v1/backupbackingimages`: List all backup backing images.
+- `GET /v1/backupbackingimages/{name}`: Get a specific backup backing image by name.
+- `DELETE /v1/backupbackingimages/{name}`: Delete a specific backup backing image by name.
+  - Query parameter for action on backup backing images: `backupBackingImageRestore`.
+- `GET /v1/recurringjobs`: List all recurring jobs.
+- `GET /v1/recurringjobs/{name}`: Get a specific recurring job by name.
+- `DELETE /v1/recurringjobs/{name}`: Delete a specific recurring job by name.
+- `POST /v1/recurringjobs`: Create a new recurring job.
+- `PUT /v1/recurringjobs/{name}`: Update a specific recurring job by name.
+- `GET /v1/orphans`: List all orphans.
+- `GET /v1/orphans/{name}`: Get a specific orphan by name.
+- `DELETE /v1/orphans/{name}`: Delete a specific orphan by name.
+- `POST /v1/supportbundles`: Create a new support bundle.
+- `GET /v1/supportbundles`: List all support bundles.
+- `GET /v1/supportbundles/{name}/{bundleName}`: Get a specific support bundle by name and bundle name.
+- `GET /v1/supportbundles/{name}/{bundleName}/download`: Download a specific support bundle by name and bundle name.
+- `DELETE /v1/supportbundles/{name}/{bundleName}`: Delete a specific support bundle by name and bundle name.
+- `POST /v1/systembackups`: Create a new system backup.
+- `GET /v1/systembackups`: List all system backups.
+- `GET /v1/systembackups/{name}`: Get a specific system backup by name.
+- `DELETE /v1/systembackups/{name}`: Delete a specific system backup by name.
+- `POST /v1/systemrestores`: Create a new system restore.
+- `GET /v1/systemrestores`: List all system restores.
+- `GET /v1/systemrestores/{name}`: Get a specific system restore by name.
+- `DELETE /v1/systemrestores/{name}`: Delete a specific system restore by name.
+
+WebSocket Endpoints:
+- `/v1/ws/settings`
+- `/v1/ws/{period}/settings`
+- `/v1/ws/volumes`
+- `/v1/ws/{period}/volumes`
+- `/v1/ws/recurringjobs`
+- `/v1/ws/{period}/recurringjobs`
+- `/v1/ws/orphans`
+- `/v1/ws/{period}/orphans`
+- `/v1/ws/nodes`
+- `/v1/ws/{period}/nodes`
+- `/v1/ws/engineimages`
+- `/v1/ws/{period}/engineimages`
+- `/v1/ws/backingimages`
+- `/v1/ws/{period}/backingimages`
+- `/v1/ws/backupbackingimages`
+- `/v1/ws/{period}/backupbackingimages`
+- `/v1/ws/backupvolumes`
+- `/v1/ws/{period}/backupvolumes`
+- `/v1/ws/backuptargets`
+- `/v1/ws/{period}/backuptargets`
+- `/v1/ws/backups`
+- `/v1/ws/{period}/backups`
+- `/v1/ws/systembackups`
+- `/v1/ws/{period}/systembackups`
+- `/v1/ws/systemrestores`
+- `/v1/ws/{period}/systemrestores`
+- `/v1/ws/events`
+- `/v1/ws/{period}/events`
+
+Use this prompt as a reference to create your API client for interacting with the Longhorn API.
