@@ -82,6 +82,7 @@ type VolumesResponse struct {
 			Size                             string `json:"size"`
 			UnmapMarkSnapChainRemovedEnabled bool   `json:"unmapMarkSnapChainRemovedEnabled"`
 		} `json:"controllers"`
+
 		Created                     string   `json:"created"`
 		CurrentImage                string   `json:"currentImage"`
 		DataEngine                  string   `json:"dataEngine"`
