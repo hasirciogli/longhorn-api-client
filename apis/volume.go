@@ -1,5 +1,14 @@
 package apis
 
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+
+	"github.com/hasirciogli/longhorn-api-client/models"
+	"github.com/hasirciogli/longhorn-api-client/utils"
+)
+
 /**
 {
     "name": "22",
@@ -31,7 +40,7 @@ package apis
 }
 */
 
-type Volume struct {
+type VolumeCreateRequest struct {
 	Name                        string   `json:"name"`
 	Size                        string   `json:"size"`
 	NumberOfReplicas            int      `json:"numberOfReplicas"`
@@ -60,7 +69,19 @@ type Volume struct {
 	FromBackup                  string   `json:"fromBackup"`
 }
 
-func CreateVolume(volume Volume) mai {
+type VolumeCreateResponse struct {
+	Error *struct {
+		Message    string         `json:"message"`
+		StatusCode int            `json:"statusCode"`
+		Response   *http.Response `json:"response"`
+	} `json:"error"`
+	Response   *http.Response `json:"response"`
+	StatusCode int            `json:"statusCode"`
+	Message    string         `json:"message"`
+	Status     bool           `json:"status"`
+}
+
+func CreateVolume(volume VolumeCreateRequest, sConfig *models.SConfig) *VolumeCreateResponse {
 	// Set default values for empty fields
 	if volume.Name == "" {
 		volume.Name = "default-name" // Set a default name
@@ -100,5 +121,146 @@ func CreateVolume(volume Volume) mai {
 		volume.SnapshotSizeUnit = "Gi" // Set a default snapshot size unit
 	}
 
-	CreateVolume()
+	body, err1 := json.Marshal(volume)
+	if err1 != nil {
+		return &VolumeCreateResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err1.Error(),
+				StatusCode: 500,
+				Response:   nil,
+			},
+			Message:    err1.Error(),
+			Status:     false,
+			StatusCode: 500,
+			Response:   nil,
+		}
+	}
+
+	resp, err := utils.Requester("POST", "/v1/volumes", body, sConfig)
+	if err != nil {
+		return &VolumeCreateResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err.Message,
+				StatusCode: 500,
+				Response:   nil,
+			},
+			Message:    err.Message,
+			Status:     false,
+			StatusCode: 500,
+			Response:   nil,
+		}
+	}
+
+	if resp.StatusCode > 299 {
+		return &VolumeCreateResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    "Volume creation failed",
+				StatusCode: resp.StatusCode,
+				Response:   resp,
+			},
+			Message:    "Volume creation failed",
+			Status:     false,
+			StatusCode: resp.StatusCode,
+			Response:   resp,
+		}
+	}
+
+	return &VolumeCreateResponse{
+		Message:    "Volume created successfully",
+		Status:     true,
+		StatusCode: resp.StatusCode,
+		Response:   resp,
+	}
+}
+
+type VolumesResponse struct {
+	Error *struct {
+		Message    string         `json:"message"`
+		StatusCode int            `json:"statusCode"`
+		Response   *http.Response `json:"response"`
+	} `json:"error"`
+	Volumes *models.VolumesResponse `json:"volumes"`
+}
+
+func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
+	resp, err := utils.Requester("GET", "/v1/volumes", nil, sConfig)
+	if err != nil {
+		return &VolumesResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err.Message,
+				StatusCode: 500,
+				Response:   nil,
+			},
+			Volumes: nil,
+		}
+	}
+
+	if resp.StatusCode > 299 {
+		return &VolumesResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    "Volume list failed",
+				StatusCode: resp.StatusCode,
+				Response:   resp,
+			},
+			Volumes: nil,
+		}
+	}
+
+	body, err2 := io.ReadAll(resp.Body)
+	if err2 != nil {
+		return &VolumesResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err2.Error(),
+				StatusCode: 500,
+				Response:   nil,
+			},
+			Volumes: nil,
+		}
+	}
+
+	var volumes *models.VolumesResponse
+	err3 := json.Unmarshal(body, &volumes)
+	if err3 != nil {
+		return &VolumesResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err3.Error(),
+				StatusCode: 500,
+				Response:   nil,
+			},
+			Volumes: nil,
+		}
+	}
+
+	return &VolumesResponse{
+		Error:   nil,
+		Volumes: volumes,
+	}
 }
