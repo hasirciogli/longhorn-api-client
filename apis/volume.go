@@ -73,6 +73,7 @@ type VolumeCreateResponse struct {
 	Error *struct {
 		Message    string         `json:"message"`
 		StatusCode int            `json:"statusCode"`
+		Status     bool           `json:"status"`
 		Response   *http.Response `json:"response"`
 	} `json:"error"`
 	Response   *http.Response `json:"response"`
@@ -127,10 +128,12 @@ func CreateVolume(volume VolumeCreateRequest, sConfig *models.SConfig) *VolumeCr
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    err1.Error(),
 				StatusCode: 500,
+				Status:     false,
 				Response:   nil,
 			},
 			Message:    err1.Error(),
@@ -146,10 +149,12 @@ func CreateVolume(volume VolumeCreateRequest, sConfig *models.SConfig) *VolumeCr
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    err.Message,
 				StatusCode: 500,
+				Status:     false,
 				Response:   nil,
 			},
 			Message:    err.Message,
@@ -164,10 +169,12 @@ func CreateVolume(volume VolumeCreateRequest, sConfig *models.SConfig) *VolumeCr
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    "Volume creation failed",
 				StatusCode: resp.StatusCode,
+				Status:     false,
 				Response:   resp,
 			},
 			Message:    "Volume creation failed",
@@ -189,6 +196,7 @@ type VolumesResponse struct {
 	Error *struct {
 		Message    string         `json:"message"`
 		StatusCode int            `json:"statusCode"`
+		Status     bool           `json:"status"`
 		Response   *http.Response `json:"response"`
 	} `json:"error"`
 	Volumes *models.VolumesResponse `json:"volumes"`
@@ -201,10 +209,12 @@ func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    err.Message,
 				StatusCode: 500,
+				Status:     false,
 				Response:   nil,
 			},
 			Volumes: nil,
@@ -216,10 +226,12 @@ func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    "Volume list failed",
 				StatusCode: resp.StatusCode,
+				Status:     false,
 				Response:   resp,
 			},
 			Volumes: nil,
@@ -232,10 +244,12 @@ func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    err2.Error(),
 				StatusCode: 500,
+				Status:     false,
 				Response:   nil,
 			},
 			Volumes: nil,
@@ -249,10 +263,12 @@ func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
 			Error: &struct {
 				Message    string         `json:"message"`
 				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
 				Response   *http.Response `json:"response"`
 			}{
 				Message:    err3.Error(),
 				StatusCode: 500,
+				Status:     false,
 				Response:   nil,
 			},
 			Volumes: nil,
@@ -262,5 +278,146 @@ func GetVolumes(sConfig *models.SConfig) *VolumesResponse {
 	return &VolumesResponse{
 		Error:   nil,
 		Volumes: volumes,
+	}
+}
+
+type VolumeDeleteRequest struct {
+	VolumeName string `json:"volumeName"`
+}
+
+type VolumeDeleteResponse struct {
+	Error *struct {
+		Message    string         `json:"message"`
+		StatusCode int            `json:"statusCode"`
+		Status     bool           `json:"status"`
+		Response   *http.Response `json:"response"`
+	} `json:"error"`
+	Message    string         `json:"message"`
+	Status     bool           `json:"status"`
+	StatusCode int            `json:"statusCode"`
+	Response   *http.Response `json:"response"`
+}
+
+func DeleteVolume(volume VolumeDeleteRequest, sConfig *models.SConfig) *VolumeDeleteResponse {
+	resp, err := utils.Requester("DELETE", "/v1/volumes/"+volume.VolumeName, nil, sConfig)
+	if err != nil {
+		return &VolumeDeleteResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err.Message,
+				StatusCode: 500,
+				Status:     false,
+				Response:   nil,
+			},
+			Message:    err.Message,
+			Status:     false,
+			StatusCode: 500,
+			Response:   nil,
+		}
+	}
+
+	if resp.StatusCode > 299 {
+		return &VolumeDeleteResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    "Volume deletion failed",
+				StatusCode: resp.StatusCode,
+				Status:     false,
+				Response:   resp,
+			},
+			Message:    "Volume deletion failed",
+			Status:     false,
+			StatusCode: resp.StatusCode,
+			Response:   resp,
+		}
+	}
+
+	return &VolumeDeleteResponse{
+		Error:      nil,
+		Message:    "Volume deleted successfully",
+		Status:     true,
+		StatusCode: resp.StatusCode,
+		Response:   resp,
+	}
+}
+
+type VolumeInspectRequest struct {
+	VolumeName string `json:"volumeName"`
+}
+
+type VolumeInspectResponse struct {
+	Error *struct {
+		Message    string         `json:"message"`
+		StatusCode int            `json:"statusCode"`
+		Status     bool           `json:"status"`
+		Response   *http.Response `json:"response"`
+	} `json:"error"`
+	Volume *models.VolumeInspectResponse `json:"volume"`
+}
+
+func InspectVolume(volume VolumeInspectRequest, sConfig *models.SConfig) *VolumeInspectResponse {
+	resp, err := utils.Requester("GET", "/v1/volumes/"+volume.VolumeName, nil, sConfig)
+	if err != nil {
+		return &VolumeInspectResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err.Message,
+				StatusCode: 500,
+				Status:     false,
+				Response:   nil,
+			},
+		}
+	}
+
+	body, err2 := io.ReadAll(resp.Body)
+	if err2 != nil {
+		return &VolumeInspectResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err2.Error(),
+				StatusCode: 500,
+				Status:     false,
+				Response:   nil,
+			},
+		}
+	}
+
+	var inspectedVolume *models.VolumeInspectResponse
+	err3 := json.Unmarshal(body, &inspectedVolume)
+	if err3 != nil {
+		return &VolumeInspectResponse{
+			Error: &struct {
+				Message    string         `json:"message"`
+				StatusCode int            `json:"statusCode"`
+				Status     bool           `json:"status"`
+				Response   *http.Response `json:"response"`
+			}{
+				Message:    err3.Error(),
+				StatusCode: 500,
+				Status:     false,
+				Response:   nil,
+			},
+		}
+	}
+
+	return &VolumeInspectResponse{
+		Error:  nil,
+		Volume: inspectedVolume,
 	}
 }

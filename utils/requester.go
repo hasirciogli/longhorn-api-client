@@ -26,7 +26,7 @@ func Requester(method string, path string, body []byte, sConfig *models.SConfig)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, &RequesterError{Message: err.Error(), StatusCode: resp.StatusCode}
+		return nil, &RequesterError{Message: err.Error(), StatusCode: 500}
 	}
 
 	return resp, nil
